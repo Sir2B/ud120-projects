@@ -14,9 +14,13 @@
     enron_data["SKILLING JEFFREY K"]["bonus"] = 5600000
     
 """
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dir_path)
 
 import pickle
 
 enron_data = pickle.load(open("../final_project/final_project_dataset.pkl", "r"))
-
-
+sum([1 for x,y in enron_data.items() if y['total_payments']=='NaN'])/float(len(enron_data))
+sum([1 for x,y in enron_data.items() if y['total_payments']=='NaN'])
+print(len(enron_data))
