@@ -11,7 +11,9 @@
 
     You fill in the regression code where indicated:
 """    
-
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dir_path)
 
 import sys
 import pickle
@@ -20,7 +22,7 @@ from feature_format import featureFormat, targetFeatureSplit
 dictionary = pickle.load( open("../final_project/final_project_dataset_modified.pkl", "r") )
 
 ### list the features you want to look at--first item in the 
-### list will be the "target" feature
+### list will be the "target" feature: long_term_incentive
 features_list = ["bonus", "salary"]
 data = featureFormat( dictionary, features_list, remove_any_zeroes=True)
 target, features = targetFeatureSplit( data )
@@ -29,7 +31,7 @@ target, features = targetFeatureSplit( data )
 from sklearn.model_selection import train_test_split
 feature_train, feature_test, target_train, target_test = train_test_split(features, target, test_size=0.5, random_state=42)
 train_color = "b"
-test_color = "b"
+test_color = "r"
 
 
 
@@ -39,9 +41,13 @@ test_color = "b"
 ### "r" to differentiate training points from test points.
 
 
+from sklearn import linear_model
+reg = linear_model.LinearRegression()
+reg.fit(feature_train, target_train)
 
+print("intercept: {0}".format(reg.intercept_))
 
-
+print("slope: {0}".format(reg.coef_))
 
 
 
@@ -64,6 +70,10 @@ try:
     plt.plot( feature_test, reg.predict(feature_test) )
 except NameError:
     pass
+
+reg.fit(feature_test, target_test)
+plt.plot(feature_train, reg.predict(feature_train), color="b") 
+
 plt.xlabel(features_list[1])
 plt.ylabel(features_list[0])
 plt.legend()
