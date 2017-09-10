@@ -1,5 +1,7 @@
 #!/usr/bin/python
-
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dir_path)
 import random
 import numpy
 import matplotlib.pyplot as plt
@@ -28,10 +30,14 @@ ages_train, ages_test, net_worths_train, net_worths_test = train_test_split(ages
 
 
 
+from sklearn import linear_model
+reg = linear_model.LinearRegression()
+reg.fit(ages_train,net_worths_train)
+# accurracy = reg.score(features_test, labels_test)
 
 
-
-
+print("Slope: {0}".format(reg.coef_[0][0]))
+print("Score: {0}".format(reg.score(ages_test, net_worths_test))
 
 
 
@@ -77,6 +83,9 @@ if len(cleaned_data) > 0:
     plt.xlabel("ages")
     plt.ylabel("net worths")
     plt.show()
+
+    print("Slope2: {0}".format(reg.coef_[0][0]))
+    print("Score2: {0}".format(reg.score(ages_test, net_worths_test))
 
 
 else:
