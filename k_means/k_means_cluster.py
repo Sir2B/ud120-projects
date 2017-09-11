@@ -53,6 +53,15 @@ feature_2 = "exercised_stock_options"
 poi  = "poi"
 features_list = [poi, feature_1, feature_2]
 data = featureFormat(data_dict, features_list )
+
+from sklearn import preprocessing
+scaler = preprocessing.MinMaxScaler()
+extend_data = numpy.array([[0, 200000, 1000000]])
+data2 = numpy.concatenate([data, extend_data])
+data_s = scaler.fit_transform(data2)
+print("scaled data: {0}".format(data_s[-1]))
+
+
 poi, finance_features = targetFeatureSplit( data )
 
 
