@@ -1,7 +1,11 @@
 #!/usr/bin/python
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dir_path)
 
 import pickle
 import numpy
+
 numpy.random.seed(42)
 
 
@@ -41,3 +45,13 @@ labels_train   = labels_train[:150]
 
 
 
+from sklearn import tree
+
+clf = tree.DecisionTreeClassifier()
+clf.fit(features_train, labels_train)
+print(clf.score(features_test, labels_test))
+num, importance = [(y, x) for y, x in enumerate(clf.feature_importances_) if x > 0.2][0]
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+print(vectorizer.get_feature_names()[num])
