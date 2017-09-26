@@ -14,6 +14,9 @@ The dataset used in this example is a preprocessed excerpt of the
 
 """
 
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dir_path)
 
 
 print __doc__
@@ -28,6 +31,7 @@ from sklearn.datasets import fetch_lfw_people
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import f1_score
 from sklearn.decomposition import RandomizedPCA
 from sklearn.svm import SVC
 
@@ -66,49 +70,57 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random
 ###############################################################################
 # Compute a PCA (eigenfaces) on the face dataset (treated as unlabeled
 # dataset): unsupervised feature extraction / dimensionality reduction
-n_components = 150
+# n_components = 150
+n_components_list = [150, 10, 15, 25, 50, 100, 250]
 
-print "Extracting the top %d eigenfaces from %d faces" % (n_components, X_train.shape[0])
-t0 = time()
-pca = RandomizedPCA(n_components=n_components, whiten=True).fit(X_train)
-print "done in %0.3fs" % (time() - t0)
-
-eigenfaces = pca.components_.reshape((n_components, h, w))
-
-print "Projecting the input data on the eigenfaces orthonormal basis"
-t0 = time()
-X_train_pca = pca.transform(X_train)
-X_test_pca = pca.transform(X_test)
-print "done in %0.3fs" % (time() - t0)
+for n_components in n_components_list:
 
 
-###############################################################################
-# Train a SVM classification model
+    print "Extracting the top %d eigenfaces from %d faces" % (n_components, X_train.shape[0])
+    t0 = time()
+    pca = RandomizedPCA(n_components=n_components, whiten=True).fit(X_train)
+    print "done in %0.3fs" % (time() - t0)
 
-print "Fitting the classifier to the training set"
-t0 = time()
-param_grid = {
-         'C': [1e3, 5e3, 1e4, 5e4, 1e5],
-          'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1],
-          }
-# for sklearn version 0.16 or prior, the class_weight parameter value is 'auto'
-clf = GridSearchCV(SVC(kernel='rbf', class_weight='balanced'), param_grid)
-clf = clf.fit(X_train_pca, y_train)
-print "done in %0.3fs" % (time() - t0)
-print "Best estimator found by grid search:"
-print clf.best_estimator_
+    # How much of the variance is explained by the first principal component? The second?
+    print pca.explained_variance_ratio_[:2]
+
+    eigenfaces = pca.components_.reshape((n_components, h, w))
+
+    print "Projecting the input data on the eigenfaces orthonormal basis"
+    t0 = time()
+    X_train_pca = pca.transform(X_train)
+    X_test_pca = pca.transform(X_test)
+    print "done in %0.3fs" % (time() - t0)
 
 
-###############################################################################
-# Quantitative evaluation of the model quality on the test set
+    ###############################################################################
+    # Train a SVM classification model
 
-print "Predicting the people names on the testing set"
-t0 = time()
-y_pred = clf.predict(X_test_pca)
-print "done in %0.3fs" % (time() - t0)
+    print "Fitting the classifier to the training set"
+    t0 = time()
+    param_grid = {
+            'C': [1e3, 5e3, 1e4, 5e4, 1e5],
+            'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1],
+            }
+    # for sklearn version 0.16 or prior, the class_weight parameter value is 'auto'
+    clf = GridSearchCV(SVC(kernel='rbf', class_weight='balanced'), param_grid)
+    clf = clf.fit(X_train_pca, y_train)
+    print "done in %0.3fs" % (time() - t0)
+    print "Best estimator found by grid search:"
+    print clf.best_estimator_
 
-print classification_report(y_test, y_pred, target_names=target_names)
-print confusion_matrix(y_test, y_pred, labels=range(n_classes))
+
+    ###############################################################################
+    # Quantitative evaluation of the model quality on the test set
+
+    print "Predicting the people names on the testing set"
+    t0 = time()
+    y_pred = clf.predict(X_test_pca)
+    print "done in %0.3fs" % (time() - t0)
+
+    print classification_report(y_test, y_pred, target_names=target_names)
+    print confusion_matrix(y_test, y_pred, labels=range(n_classes))
+    print f1_score(y_test, y_pred, average='weighted') 
 
 
 ###############################################################################
